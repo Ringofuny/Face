@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ふわふわ ˙-˙（瞬きしても口はそのまま）</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    #face {
+      font-size: 128px;
+      color: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s ease;
+      cursor: default;
+      white-space: nowrap;
+      line-height: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div id="face"><span id="left-eye">˙</span> - <span id="right-eye">˙</span></div>
+
+  <script>
+    const leftEye = document.getElementById('left-eye');
+    const rightEye = document.getElementById('right-eye');
+    const face = document.getElementById('face');
+
+    let angle = 0;
+    let sleepAngle = 0;
+    let lastInteraction = Date.now();
+    let isSleeping = false;
+
+    function floatFace() {
+      if (!isSleeping) {
+        angle += 0.05;
+        const y = Math.cos(angle) * 10;
+        face.style.transform = `translate(-50%, calc(-50% + ${y}px))`;
+      } else {
+        sleepAngle += 0.02;
+        const y = Math.sin(sleepAngle) * 5 + 10;
+        const scale = 0.9 + Math.sin(sleepAngle) * 0.02;
+        face.style.transform = `translate(-50%, calc(-50% + ${y}px)) scale(${scale})`;
+      }
+      requestAnimationFrame(floatFace);
+    }
+    floatFace();
+
+    function blink() {
+      if (isSleeping) return;
+
+      leftEye.textContent = '˘';  // 左目閉じる
+      rightEye.textContent = '˘'; // 右目閉じる
+      face.style.transform = 'translate(-50%, calc(-50% + 5px)) scale(0.95)';
+
+      setTimeout(() => {
+        leftEye.textContent = '˙'; // 左目開く
+        rightEye.textContent = '˙'; // 右目開く
+        face.style.transform = 'translate(-50%, -50%)';
+      }, 150);
+
+      const nextBlink = Math.random() * 4000 + 2000;
+      setTimeout(blink, nextBlink);
+    }
+    setTimeout(blink, 3000);
+
+    function resetInteraction() {
+      lastInteraction = Date.now();
+      if (isSleeping) {
+        wakeUp();
+      }
+    }
+
+    document.addEventListener('mousemove', resetInteraction);
+    document.addEventListener('mousedown', resetInteraction);
+    document.addEventListener('touchstart', resetInteraction);
+    document.addEventListener('keydown', resetInteraction);
+
+    function checkSleep() {
+      const now = Date.now();
+      if (now - lastInteraction > 15000 && !isSleeping) {
+        sleep();
+      }
+      setTimeout(checkSleep, 1000);
+    }
+    checkSleep();
+
+    function sleep() {
+      isSleeping = true;
+      sleepAngle = 0;
+      leftEye.textContent = '-';
+      rightEye.textContent = '-';
+      face.innerHTML = '<span id="left-eye">-</span> _ <span id="right-eye">-</span>'; // 寝顔
+    }
+
+    function wakeUp() {
+      isSleeping = false;
+      face.innerHTML = '<span id="left-eye">˙</span> - <span id="right-eye">˙</span>';
+    }
+  </script>
+</body>
+</html>
